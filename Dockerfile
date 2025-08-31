@@ -1,31 +1,27 @@
 # syntax=docker/dockerfile:1
 FROM php:8.2-cli
 
-# Autorise composer à tourner en root + mode prod
 ENV APP_ENV=prod \
     COMPOSER_ALLOW_SUPERUSER=1
 
-# Outils + extensions PHP (MariaDB/MySQL)
 RUN apt-get update \
  && apt-get install -y git unzip libzip-dev \
  && docker-php-ext-install pdo_mysql zip opcache \
  && rm -rf /var/lib/apt/lists/*
 
-# Composer depuis l'image officielle
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-
 WORKDIR /app
 
-# Copie d'abord les manifests pour profiter du cache
+# 1) Dépendances sans scripts (bin/console pas encore là)
 COPY composer.json composer.lock symfony.lock* ./
+RUN composer install --no-dev --no-scripts --prefer-dist --no-interaction
 
-# ⚠ Plugins actifs grâce à COMPOSER_ALLOW_SUPERUSER=1
-RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
-
-# Puis le reste du code
+# 2) Copie du reste du code (bin/console arrive maintenant)
 COPY . .
 
-# Dossiers runtime
+# 3) Deuxième passe pour exécuter les auto-scripts proprement
+RUN composer install --no-dev --optimize-autoloader --prefer-dist --no-interaction
+
 RUN mkdir -p var/cache var/log && chmod -R 777 var
 
 EXPOSE 10000
