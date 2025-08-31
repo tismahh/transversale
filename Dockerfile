@@ -2,12 +2,12 @@
 
 FROM php:8.2-cli
 
-# Outils + extensions PHP (MySQL). Si tu es en Postgres, vois plus bas.
+# Outils + extensions PHP (MySQL). Pour Postgres, voir variante plus bas.
 RUN apt-get update \
  && apt-get install -y git unzip libzip-dev \
  && docker-php-ext-install pdo_mysql opcache
 
-# Installer Composer (copié depuis l'image officielle)
+# Installer Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
@@ -16,11 +16,11 @@ WORKDIR /app
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
-# Copier le reste du code
+# Copier le reste du projet
 COPY . .
 
-# Expose le port HTTP interne
+# Exposer le port interne utilisé par Render
 EXPOSE 10000
 
-# Démarre le serveur PHP intégré en servant /public (router = index.php)
+# Démarrer le serveur PHP intégré en servant /public (router = index.php)
 CMD ["php", "-S", "0.0.0.0:10000", "-t", "public", "public/index.php"]
