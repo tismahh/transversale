@@ -1,0 +1,82 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ bureau.name ?? 'Bureau' }}{% endblock %}
+
+{% block body %}
+<div class="bureau-page">
+
+  <!-- En-tête bureau -->
+  <header class="bureau-header">
+    <h1 class="bureau-title">{{ bureau.name ?? 'Bureau' }}</h1>
+
+    {% if bureau.description %}
+      <section class="bureau-desc">
+        <h2 class="section-title">Description</h2>
+        <p>{{ bureau.description|nl2br }}</p>
+      </section>
+    {% endif %}
+  </header>
+
+  <!-- Membres -->
+  <section class="bureau-members">
+    <h2 class="section-title">Membres</h2>
+    <div class="table-wrapper">
+      <table class="members-table">
+        <thead>
+          <tr>
+            <th>Prénom</th>
+            <th>Nom</th>
+            <th>Rôle</th>
+            <th>Email</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for m in users %}
+          {% set u = m.user is defined ? m.user : m %}
+          <tr>
+            <td>{{ u.firstName ?? u.first_name ?? '' }}</td>
+            <td>{{ u.lastName  ?? u.last_name  ?? '' }}</td>
+            <td>{{ m.roleInBureau ?? m.role_in_bureau ?? m.role ?? '—' }}</td>
+            <td>
+              {% set mail = u.email ?? '' %}
+              {% if mail %}
+                <a href="mailto:{{ mail }}">{{ mail }}</a>
+              {% else %}
+                —
+              {% endif %}
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="4" style="text-align:center;opacity:.7;">Aucun membre renseigné.</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Clubs liés -->
+  {% if clubs is defined and clubs|length %}
+    <section class="bureau-clubs">
+    <h2 class="section-title">Clubs rattachés</h2>
+    <div class="club-grid">
+        {% for club in clubs %}
+        {% set logo =
+            club.logo
+            ? (club.logo starts with '/' ? club.logo : asset('uploads/clubs/' ~ club.logo))
+            : asset('images/placeholder.png')
+        %}
+        <a class="club-card" title="{{ club.name }}"
+            href="{{ path('app_club_show', {'id': club.id}) }}"
+            style="text-decoration:none;color:inherit;">
+            <img src="{{ logo }}" alt="Logo {{ club.name }}" loading="lazy" decoding="async">
+            <figcaption>{{ club.name }}</figcaption>
+        </a>
+        {% endfor %}
+    </div>
+    </section>
+    {% endif %}
+
+
+</div>
+{% endblock %}

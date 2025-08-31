@@ -1,0 +1,52 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Bureaux/Clubs{% endblock %}
+
+{% block body %}
+  {% set firstRow  = bureaux|slice(0, 3) %}
+  {% set secondRow = bureaux|slice(3, 2) %}
+
+  <div class="bureaux-grid">
+    {# ——— 3 logos en haut ——— #}
+    {% if firstRow|length %}
+      <div class="row row-3">
+        {% for bureau in firstRow %}
+          <a
+            class="image-box-el"
+            href="{{ path('bureau_accueil_details', {'id': bureau.id}) }}"
+            aria-label="{{ bureau.nom|default('Bureau') }}"
+          >
+            <img
+              src="{{ asset('uploads/bureaux/' ~ bureau.logo) }}"
+              alt="{{ bureau.nom|default('Logo de bureau') }}"
+              loading="lazy"
+              decoding="async"
+              draggable="false"
+            >
+          </a>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {# ——— 2 logos en bas ——— #}
+    {% if secondRow|length %}
+      <div class="row row-2">
+        {% for bureau in secondRow %}
+          <a
+            class="image-box-el"
+            href="{{ path('bureau_accueil_details', {'id': bureau.id}) }}"
+            aria-label="{{ bureau.nom|default('Bureau') }}"
+          >
+            <img
+              src="{{ asset('uploads/bureaux/' ~ bureau.logo) }}"
+              alt="{{ bureau.nom|default('Logo de bureau') }}"
+              loading="lazy"
+              decoding="async"
+              draggable="false"
+            >
+          </a>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}

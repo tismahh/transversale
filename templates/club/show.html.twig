@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ club.name ?? 'Club' }}{% endblock %}
+
+{% block body %}
+<div class="bureau-page">
+
+  <header class="bureau-header">
+    <h1 class="bureau-title">{{ club.name ?? 'Club' }}</h1>
+
+    {% if club.description %}
+      <section class="bureau-desc">
+        <h2 class="section-title">Description</h2>
+        <p>{{ club.description|nl2br }}</p>
+      </section>
+    {% endif %}
+  </header>
+
+  <section class="bureau-members">
+    <h2 class="section-title">Membres</h2>
+    <div class="table-wrapper">
+      <table class="members-table">
+        <thead>
+          <tr>
+            <th>Prénom</th>
+            <th>Nom</th>
+            <th>Rôle</th>
+            <th>Email</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for u in users %}
+          <tr>
+            <td>{{ u.firstName ?? '' }}</td>
+            <td>{{ u.lastName ?? '' }}</td>
+            <td>{{ u.role ?? '—' }}</td>
+            <td>{% if u.email %}<a href="mailto:{{ u.email }}">{{ u.email }}</a>{% else %}—{% endif %}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="4" style="text-align:center;opacity:.7;">Aucun membre renseigné.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+{% endblock %}

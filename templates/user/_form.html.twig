@@ -1,0 +1,29 @@
+{{ form_start(form) }}
+
+    <div>
+        {{ form_label(form.email) }}
+        {{ form_widget(form.email) }}
+        {{ form_errors(form.email) }}
+    </div>
+
+    <div>
+        {{ form_label(form.login) }}
+        {{ form_widget(form.login) }}
+        {{ form_errors(form.login) }}
+    </div>
+
+    <div>
+        {{ form_label(form.roles) }}
+        {{ form_widget(form.roles) }}
+        {{ form_errors(form.roles) }}
+    </div>
+
+    <div>
+        {{ form_label(form.password) }}
+        {{ form_widget(form.password) }}
+        {{ form_errors(form.password) }}
+    </div>
+
+    <button type="submit" class="btn btn-success">{{ button_label }}</button>
+
+{{ form_end(form) }}

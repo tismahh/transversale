@@ -1,0 +1,168 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Événements{% endblock %}
+
+{% block body %}
+{% set bureaux = bureaux|default([]) %}
+{% set clubs   = clubs|default([]) %}
+
+<div class="container-events has-filters">
+  <!-- === Filtres === -->
+  <aside class="filters">
+    <h4 class="title-filter">Filtre :</h4>
+
+    <form id="filters-form">
+      <div class="filter-segment">
+        <button type="button" class="seg active" id="btn-bureaux">Bureaux</button>
+        <button type="button" class="seg"         id="btn-clubs">Clubs</button>
+      </div>
+
+      <div class="filter-items custom-scrollbar" id="list-bureaux">
+        {% for bureau in bureaux %}
+          <label class="custom-checkbox">
+            <input type="checkbox" data-filter-type="bureau" data-id="{{ bureau.id }}">
+            <span class="box"></span>
+            {{ bureau.name }}
+          </label>
+        {% endfor %}
+      </div>
+
+      <div class="filter-items custom-scrollbar" id="list-clubs" style="display:none;">
+        {% for club in clubs %}
+          <label class="custom-checkbox">
+            <input type="checkbox" data-filter-type="club" data-id="{{ club.id }}">
+            <span class="box"></span>
+            {{ club.name }}
+          </label>
+        {% endfor %}
+      </div>
+    </form>
+  </aside>
+
+  <!-- === Événements === -->
+  <section class="elements">
+    <div class="images">
+      {% for event in events %}
+        {% set clubIds = [] %}
+        {% if event.clubs is defined and event.clubs|length > 0 %}
+          {% for c in event.clubs %}
+            {% set clubIds = clubIds|merge([c.id]) %}
+          {% endfor %}
+        {% elseif event.club is defined and event.club %}
+          {% set clubIds = [event.club.id] %}
+        {% endif %}
+
+        <div class="image-box event-tile" data-event-id="{{ event.id }}">
+          <img
+            src="{{ asset('uploads/events/' ~ event.poster) }}"
+            alt="Affiche de l'événement {{ event.title }}"
+            data-id-bureau="{{ event.bureau ? event.bureau.id : '' }}"
+            data-id-club="{{ clubIds|join(',') }}"
+          >
+
+          <!-- Hover fiche info -->
+          <div class="event-hover" aria-hidden="true">
+            <div class="event-hover__panel">
+              <h5 class="event-title">{{ event.title }}</h5>
+              <ul class="event-meta">
+                {% if event.startDate is not null %}
+                  <li><strong>Début :</strong> {{ event.startDate|date('d/m/Y H:i') }}</li>
+                {% endif %}
+                {% if event.endDate is not null %}
+                  <li><strong>Fin :</strong> {{ event.endDate|date('d/m/Y H:i') }}</li>
+                {% endif %}
+                {% if event.bureau is defined and event.bureau %}
+                  <li><strong>Bureau :</strong> {{ event.bureau.name }}</li>
+                {% endif %}
+                {% if event.club is defined and event.club %}
+                  <li><strong>Club :</strong> {{ event.club.name }}</li>
+                {% endif %}
+                {% if event.capacity is not null %}
+                  <li><strong>Capacité :</strong> {{ event.capacity }}</li>
+                {% endif %}
+                {% if event.organizer is defined and event.organizer %}
+                  <li><strong>Organisateur :</strong> {{ event.organizer.login ?? event.organizer.email ?? '—' }}</li>
+                {% endif %}
+              </ul>
+            </div>
+          </div>
+
+          <!-- Bouton mobile -->
+          <button class="event-info-btn" type="button" aria-label="Afficher les informations">i</button>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+
+<!-- Script JS filtres et infos -->
+<script>
+(function(){
+  const root = document.querySelector('.container-events.has-filters');
+  if(!root) return;
+
+  const btnBureaux  = root.querySelector('#btn-bureaux');
+  const btnClubs    = root.querySelector('#btn-clubs');
+  const listB       = root.querySelector('#list-bureaux');
+  const listC       = root.querySelector('#list-clubs');
+  const images      = Array.from(root.querySelectorAll('.image-box img'));
+
+  function setMode(mode){
+    const isB = mode === 'bureaux';
+    btnBureaux.classList.toggle('active', isB);
+    btnClubs.classList.toggle('active', !isB);
+    listB.style.display = isB ? '' : 'none';
+    listC.style.display = isB ? 'none' : '';
+    filter();
+  }
+
+  function getCheckedIds(container){
+    return Array.from(container.querySelectorAll('input[type="checkbox"]:checked'))
+                .map(cb => cb.dataset.id);
+  }
+
+  function filter(){
+    const mode = btnBureaux.classList.contains('active') ? 'bureaux' : 'clubs';
+    const ids  = mode === 'bureaux' ? getCheckedIds(listB) : getCheckedIds(listC);
+
+    images.forEach(img=>{
+      const box = img.closest('.image-box');
+      if(mode === 'bureaux'){
+        const id = (img.dataset.idBureau || '').trim();
+        box.style.display = (ids.length === 0 || ids.includes(id)) ? '' : 'none';
+      }else{
+        const raw = (img.dataset.idClub || '').trim();
+        const eventClubIds = raw ? raw.split(',').map(s => s.trim()) : [];
+        const show = ids.length === 0 || eventClubIds.some(id => ids.includes(id));
+        box.style.display = show ? '' : 'none';
+      }
+    });
+  }
+
+  // toggle boutons
+  btnBureaux.addEventListener('click', ()=>setMode('bureaux'));
+  btnClubs  .addEventListener('click', ()=>setMode('clubs'));
+  root.querySelector('#filters-form').addEventListener('change', e=>{
+    if(e.target.matches('input[type="checkbox"]')) filter();
+  });
+
+  // bouton mobile : affiche/cacher la fiche info
+  document.querySelectorAll('.event-info-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const tile = btn.closest('.event-tile');
+      const already = tile.classList.contains('show-info');
+      document.querySelectorAll('.event-tile.show-info').forEach(t => t.classList.remove('show-info'));
+      if (!already) tile.classList.add('show-info');
+    });
+  });
+
+  document.addEventListener('click', (e) => {
+    const open = document.querySelector('.event-tile.show-info');
+    if (open && !open.contains(e.target)) open.classList.remove('show-info');
+  });
+
+  setMode('bureaux'); // initialisation
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Bureau{% endblock %}
+
+{% block body %}
+    <div class="container d-block mt-5">
+        <div class="row">
+            <h1>Bureau</h1>
+        </div>
+        <div class="row table-wrapper">
+            <table class="table m-0">
+                <tbody>
+                    <tr>
+                        <th>Id</th>
+                        <td>{{ bureau.id }}</td>
+                    </tr>
+                    <tr>
+                        <th>Name</th>
+                        <td>{{ bureau.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Description</th>
+                        <td>{{ bureau.description }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="row row-list" >
+            <h2>Clubs liés à {{ bureau.name }}</h2>
+            <ul class="m-4">
+                {% for club in clubs %}
+                    <li class="ml-4"><a href="{{ path('app_club_show', {id: club.id}) }}">{{ club.name }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+        <div class="row">
+            <a href="{{ path('app_bureau_index') }}" class="btn btn-sm btn-info m-1">back to list</a>
+            <a href="{{ path('app_bureau_edit', {'id': bureau.id}) }}" class="btn btn-sm btn-primary m-1">edit</a>
+            {{ include('bureau/_delete_form.html.twig') }}
+        </div>
+    </div>
+{% endblock %}

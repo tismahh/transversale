@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New Club{% endblock %}
+
+{% block body %}
+<div class="container d-block mt-5">
+    <div class="row">
+        <h1>Club</h1>
+    </div>
+    <div class="row">
+        {{ include('club/_form.html.twig', {'button_label': 'Créer'}) }}
+
+        <a href="{{ path('app_club_index') }}" class="btn btn-sm btn-info m-1">back</a>
+    </div>    
+</div>
+{% endblock %}

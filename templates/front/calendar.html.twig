@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Calendrier{% endblock %}
+
+{% block body %}
+<div class="cal-page">
+  <!-- Barre de sélection du mois -->
+  <form method="GET" action="{{ path('calendar_index') }}" class="cal-header">
+    <div class="cal-toolbar">
+      <label for="mois" class="cal-label">Choisir un mois</label>
+
+      <div class="cal-controls">
+        <select name="mois" id="mois" class="cal-select">
+          {% for num, nom in {
+            '01':'Janvier', '02':'Février', '03':'Mars', '04':'Avril',
+            '05':'Mai', '06':'Juin', '07':'Juillet', '08':'Août',
+            '09':'Septembre', '10':'Octobre', '11':'Novembre', '12':'Décembre'
+          } %}
+            <option value="{{ num }}" {% if mois == num %}selected{% endif %}>{{ nom }}</option>
+          {% endfor %}
+        </select>
+
+        <button type="submit" class="cal-btn">Valider</button>
+      </div>
+    </div>
+  </form>
+
+  <!-- Zone image : tient dans l'écran sans scroll -->
+  <div class="cal-stage">
+    <div class="cal-image-wrap">
+      <img
+        class="cal-image"
+        src="{{ asset('uploads/calendar-' ~ mois ~ '.png') }}"
+        alt="Calendrier du mois {{ mois }}"
+      >
+    </div>
+  </div>
+</div>
+{% endblock %}

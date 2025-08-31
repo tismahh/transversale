@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}Gestion des événements{% endblock %}</title>
+
+  {{ encore_entry_link_tags('app') }}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+</head>
+<body>
+  <div class="background"></div>
+  <div class="page-content">
+
+    <!-- ================= NAVBAR ================= -->
+    <header class="pn-nav">
+      <div class="pn-nav__inner">
+        <!-- Logo gauche -->
+        <a class="pn-nav__brand" href="{{ path('accueil_events_index') }}">
+          <img src="{{ absolute_url('/images/polytech_nancy_logo.png') }}" alt="Polytech Nancy Logo">
+        </a>
+
+        <!-- Centre (menu) : centré en desktop, panneau en mobile -->
+        <nav class="pn-nav__center" id="pn-menu" aria-label="Navigation principale">
+          <ul class="pn-nav__menu">
+            <li><a {% if app.request.attributes.get('_route') == 'accueil_events_index' %}class="navbar-active"{% endif %} href="{{ path('accueil_events_index') }}">Événement</a></li>
+            <li><a {% if app.request.attributes.get('_route') == 'calendar_index' %}class="navbar-active"{% endif %} href="{{ path('calendar_index') }}">Calendrier</a></li>
+            <li><a {% if app.request.attributes.get('_route') == 'bureau_accueil' %}class="navbar-active"{% endif %} href="{{ path('bureau_accueil') }}">Bureaux/Clubs</a></li>
+
+            <!-- Connexion (mobile seulement) -->
+            <li class="pn-only-mobile">
+              {% if app.user %}
+                <a href=""><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
+              {% else %}
+                <a href=""><i class="fas fa-user"></i> Connexion</a>
+              {% endif %}
+            </li>
+          </ul>
+        </nav>
+
+        <!-- Droite : connexion (desktop) -->
+        <div class="pn-nav__user pn-only-desktop">
+          {% if app.user %}
+            <span>{{ app.user.username }}</span>
+            <a href=""><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
+          {% else %}
+            <a href=""><i class="fas fa-user"></i> Connexion</a>
+          {% endif %}
+        </div>
+
+        <!-- Burger mobile -->
+        <button class="pn-nav__burger" id="pn-burger" aria-expanded="false" aria-controls="pn-menu" aria-label="Ouvrir le menu">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+    </header>
+    <!-- =============== FIN NAVBAR =============== -->
+
+    {% block body %}{% endblock %}
+  </div>
+
+  <!-- JS navbar (indépendant) -->
+  <script>
+  (function(){
+    function initPN(){
+      const header = document.querySelector(".pn-nav");
+      const burger = document.getElementById("pn-burger");
+      const panel  = document.getElementById("pn-menu");
+      if (!header || !burger || !panel) return;
+
+      function closeMenu(){
+        header.classList.remove("is-open","is-opening");
+        burger.setAttribute("aria-expanded","false");
+        panel.style.maxHeight = "0px";
+        panel.style.opacity = "0";
+        panel.style.pointerEvents = "none";
+      }
+      function openMenu(){
+        header.classList.add("is-opening");
+        panel.style.maxHeight = "0px";
+        panel.style.opacity = "1";
+        panel.style.pointerEvents = "auto";
+        const h = panel.scrollHeight;
+        panel.style.maxHeight = h + "px";
+        requestAnimationFrame(() => {
+          header.classList.add("is-open");
+          burger.setAttribute("aria-expanded","true");
+          panel.addEventListener("transitionend", function onEnd(e){
+            if (e.propertyName === "max-height") {
+              header.classList.remove("is-opening");
+              panel.removeEventListener("transitionend", onEnd);
+            }
+          });
+        });
+      }
+
+      burger.addEventListener("click", () => {
+        const expanded = burger.getAttribute("aria-expanded") === "true";
+        expanded ? closeMenu() : openMenu();
+      });
+
+      // Reset en desktop / recalc en mobile
+      function onResize(){
+        if (window.innerWidth > 992) {
+          panel.style.maxHeight = "";
+          panel.style.opacity = "";
+          panel.style.pointerEvents = "";
+          header.classList.remove("is-open","is-opening");
+          burger.setAttribute("aria-expanded","false");
+        } else if (header.classList.contains("is-open")) {
+          panel.style.maxHeight = panel.scrollHeight + "px";
+        }
+      }
+      window.addEventListener("resize", onResize, { passive:true });
+    }
+
+    document.addEventListener("DOMContentLoaded", initPN);
+    document.addEventListener("turbo:load", initPN); // si tu utilises Turbo/Stimulus
+  })();
+  </script>
+
+  {{ encore_entry_script_tags('app') }}
+</body>
+</html>
